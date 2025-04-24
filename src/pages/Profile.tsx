@@ -1,0 +1,45 @@
+import React, { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = 'https://qstvvpebmxeljrtxssed.supabase.co';
+const supabaseAnonKey =   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzdHZ2cGVibXhlbGpydHhzc2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5NzU2NjIsImV4cCI6MjA2MDU1MTY2Mn0.oSqV-Xodv0xfUOe3RtoIfa8p-0lzQm32SFYC1YrNSmI'
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const Profile = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error("Erreur de récupération de l'utilisateur :", error.message);
+      }
+      setUser(user);
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return <div className="p-6">Chargement...</div>;
+  }
+
+  if (!user) {
+    return <div className="p-6">Utilisateur non connecté.</div>;
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Profil utilisateur</h1>
+      <div className="bg-muted p-4 rounded-lg">
+        <p><strong>ID :</strong> {user.id}</p>
+        <p><strong>Email :</strong> {user.email}</p>
+        <p><strong>Créé le :</strong> {new Date(user.created_at).toLocaleString()}</p>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
