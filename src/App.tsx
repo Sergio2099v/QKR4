@@ -53,10 +53,8 @@ function App() {
           <Routes>
             <Route path="/" element={isAuthenticated ? <Index /> : <Navigate to="/auth" />} />
             <Route path="/auth" element={!isAuthenticated ? <Auth /> : <Navigate to="/" />} />
-      
             <Route path="/history" element={isAuthenticated ? <History /> : <Navigate to="/auth" />} />
-       <Route path="/profile" element={<Profile />} />
-
+            <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
