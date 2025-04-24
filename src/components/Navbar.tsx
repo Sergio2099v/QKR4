@@ -21,8 +21,7 @@ const Navbar = () => {
       <div className="flex gap-4">
         <Link to="/">
           <Button variant="ghost">Accueil</Button>
-        </Link>
-        
+        </Link>       
         <Link to="/history">
           <Button variant="ghost">Historique</Button>
         </Link>
@@ -30,7 +29,6 @@ const Navbar = () => {
           <Button variant="ghost">Profil</Button>
         </Link>
       </div>
-      
     </nav>
   );
 };
