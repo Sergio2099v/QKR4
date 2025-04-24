@@ -52,32 +52,34 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Quiz Karoka</h1>
-          <div className="flex items-center gap-4">
-            {isAdmin && (
-              <Button variant="outline" onClick={handleViewHistory}>
-                Historique
-              </Button>
-            )}
-            <div className="flex items-center gap-3">
-           {userDisplayName && <UserAvatar name={userDisplayName} />}
+  <div className="min-h-screen p-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Quiz Karoka</h1>
+        <div className="flex items-center gap-4">
+          {isAdmin && (
+            <Button variant="outline" onClick={handleViewHistory}>
+              Historique
+            </Button>
+          )}
+          <div className="flex items-center gap-3">
+            {userDisplayName && <UserAvatar name={userDisplayName} />}
           </div>
         </div>
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-semibold">
-            Bienvenue dans Quiz Karoka !
-          </h2>
-          <p className="text-muted-foreground">
-            Testez vos connaissances sur la réglementation des extincteurs.
-          </p>
-          <Button size="lg" className="mt-4" onClick={handleStartQuiz}>
-            Commencer le Quiz
-          </Button>
-        </div>
+      </div> {/* ← cette ligne ferme le bloc du haut */}
+      
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-semibold">
+          Bienvenue dans Quiz Karoka !
+        </h2>
+        <p className="text-muted-foreground">
+          Testez vos connaissances sur la réglementation des extincteurs.
+        </p>
+        <Button size="lg" className="mt-4" onClick={handleStartQuiz}>
+          Commencer le Quiz
+        </Button>
       </div>
     </div>
-  );
-}
+  </div>
+);
+
