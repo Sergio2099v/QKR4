@@ -30,9 +30,7 @@ const Navbar = () => {
           <Button variant="ghost">Profil</Button>
         </Link>
       </div>
-      <Button variant="destructive" onClick={handleLogout}>
-        Déconnexion
-      </Button>
+      
     </nav>
   );
 };
