@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-
+import { Button } from "@/components/ui/button";
 const supabaseUrl = 'https://qstvvpebmxeljrtxssed.supabase.co';
 const supabaseAnonKey =   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzdHZ2cGVibXhlbGpydHhzc2VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5NzU2NjIsImV4cCI6MjA2MDU1MTY2Mn0.oSqV-Xodv0xfUOe3RtoIfa8p-0lzQm32SFYC1YrNSmI'
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -8,7 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
+    const navigate = useNavigate();
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -21,6 +21,10 @@ const Profile = () => {
 
     fetchUser();
   }, []);
+    const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   if (loading) {
     return <div className="p-6">Chargement...</div>;
@@ -38,6 +42,9 @@ const Profile = () => {
         <p><strong>Email :</strong> {user.email}</p>
         <p><strong>Créé le :</strong> {new Date(user.created_at).toLocaleString()}</p>
       </div>
+      <Button variant="destructive" onClick={handleLogout}>
+        Déconnexion
+      </Button>
     </div>
   );
 };
