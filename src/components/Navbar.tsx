@@ -22,9 +22,7 @@ const Navbar = () => {
         <Link to="/">
           <Button variant="ghost">Accueil</Button>
         </Link>
-        <Link to="/quiz">
-          <Button variant="ghost">Quiz</Button>
-        </Link>
+        
         <Link to="/history">
           <Button variant="ghost">Historique</Button>
         </Link>
