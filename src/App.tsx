@@ -40,7 +40,7 @@ function App() {
   }, []);
 
   if (isAuthenticated === null) {
-    return <div>Chargement...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
