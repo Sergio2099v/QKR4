@@ -63,7 +63,7 @@ export default function Index() {
               </Button>
             )}
             <div className="flex items-center gap-3">
-              {userDisplayName && <UserAvatar name={userDisplayName} /></div>
+           {userDisplayName && <UserAvatar name={userDisplayName} />}
           </div>
         </div>
         <div className="text-center space-y-4">
