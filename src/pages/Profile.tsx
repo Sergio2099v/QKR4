@@ -37,11 +37,12 @@ const Profile = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Profil utilisateur</h1>
-      <div className="bg-muted p-4 rounded-lg">
+      <div className="bg-muted p-4 rounded-lg mb-4">
         <p><strong>ID :</strong> {user.id}</p>
         <p><strong>Email :</strong> {user.email}</p>
         <p><strong>Créé le :</strong> {new Date(user.created_at).toLocaleString()}</p>
       </div>
+
       <Button variant="destructive" onClick={handleLogout}>
         Déconnexion
       </Button>
