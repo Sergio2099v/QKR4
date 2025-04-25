@@ -86,7 +86,8 @@ export default function Quiz() {
   const [showScore, setShowScore] = useState(false);
   
   const handleAnswerClick = async (selectedAnswer: string) => {
-    const isCorrect = selectedAnswer === questions[currentQuestion].correctAnswer;
+const isCorrect = selectedAnswer === questions[currentQuestion].options[questions[currentQuestion].correct];
+
     if (isCorrect) {
       setScore(score + 1);
     }
