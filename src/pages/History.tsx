@@ -35,7 +35,7 @@ export default function History() {
 
   const fetchResults = async () => {
     const { data, error } = await supabase
-      .from('history')
+      .from('quiz_results')
       .select('*')
       .order('created_at', { ascending: false });
 
