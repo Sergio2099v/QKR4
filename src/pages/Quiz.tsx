@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const questions = [
-  {id:1,question: "Quel est le principal objectif du référentiel concernant le domaine d'application des extincteurs?",options: ["Définir les exigences pour la fabrication des extincteurs.", "Définir les exigences pour la conception, la réalisation et la maintenance des installations d'extincteurs.", "Établir les tarifs de location des extincteurs portatifs.", "Former le personnel à l'utilisation des extincteurs en entreprise."],correct: 1},
+{id:1,question: "Quel est le principal objectif du référentiel concernant le domaine d'application des extincteurs?",options: ["Définir les exigences pour la fabrication des extincteurs.", "Définir les exigences pour la conception, la réalisation et la maintenance des installations d'extincteurs.", "Établir les tarifs de location des extincteurs portatifs.", "Former le personnel à l'utilisation des extincteurs en entreprise."],correct: 1},
 {id:2,question: "Le référentiel s'applique-t-il uniquement aux bâtiments industriels?",options: ["Oui, car les risques d'incendie y sont plus élevés.", "Oui, car ce sont les seuls lieux mentionnés explicitement.", "Non, il concerne principalement les établissements recevant du public (ERP).", "Non, il concerne des surfaces diverses telles que les locaux industriels, agricoles, commerciaux ou administratifs, ainsi que certaines parties d'habitation."],correct: 3},
 {id:3,question: "Quels types de surfaces couvertes sont spécifiquement mentionnés dans le domaine d'application?",options: ["Uniquement les parkings souterrains et les zones de stockage de produits chimiques.", "Les théâtres, cinémas et hôpitaux.", "Les locaux techniques, les parcs de stationnement couverts, les dégagements, halls d'entrée, etc.", "Les habitations individuelles de plus de trois étages."],correct: 2},
 {id:4,question: "Les installations particulières mentionnées dans le domaine d'application concernent principalement?",options: ["Les installations particulières visées au § 2.3.", "Les habitations individuelles isolées.", "Les véhicules de transport de marchandises dangereuses.", "Les chantiers de construction de moins de 50 personnes."],correct: 0},
@@ -78,7 +78,7 @@ const questions = [
 {id:73,question: "Le contrôle des extincteurs après utilisation doit être effectué?",options: ["Immédiatement après utilisation pour vérifier qu'il est toujours en état de fonctionnement ou doit être rechargé.", "Lors de la prochaine vérification périodique annuelle.", "Seulement si l'extincteur a été complètement vidé.", "Uniquement par le personnel ayant utilisé l'extincteur."],correct: 0},
 {id:74,question: "Les informations complémentaires peuvent également porter sur?",options: ["Les techniques avancées de lutte contre l'incendie.", "La conception des systèmes de détection incendie.", "Les consignes de sécurité à respecter en cas d'incendie.", "La réglementation relative aux assurances incendie."],correct: 2},
 {id:75,question: "Selon le texte, les informations portées sur l'extincteur permettent de connaître?",options: ["Le nom du dernier utilisateur.", "Le nombre total d'incendies éteints avec cet appareil.", "Les opérations de maintenance réalisées et la date de la prochaine vérification.", "Le coût d'achat initial de l'extincteur."],correct: 2}
-
+]
 export default function Quiz() {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
