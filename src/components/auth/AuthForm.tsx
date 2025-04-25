@@ -30,8 +30,8 @@ export function AuthForm() {
           options: {
             data: {
               display_name: displayName,
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            }
+            // ✅ Ligne supprimée : emailRedirectTo
           },
         });
         if (error) throw error;
