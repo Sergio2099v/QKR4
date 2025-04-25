@@ -31,7 +31,7 @@ export function AuthForm() {
             data: {
               display_name: displayName,
             }
-            // ✅ Ligne supprimée : emailRedirectTo
+           
           },
         });
         if (error) throw error;

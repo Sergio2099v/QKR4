@@ -47,7 +47,7 @@ const Profile = () => {
         <p><strong>Créé le :</strong> {new Date(user.created_at).toLocaleString()}</p>
       </div>
 
-      <Button variant="destructive" onClick={handleLogout}>
+      <Button variant="ghost" onClick={handleLogout}>
         Déconnexion
       </Button>
     </div>
