@@ -15,7 +15,7 @@ export function AuthForm() {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,31 +24,48 @@ export function AuthForm() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ 
-          email, 
+        const { data, error } = await supabase.auth.signUp({
+          email,
           password,
           options: {
             data: {
               display_name: displayName,
-            }
-           
+            },
+
+            // ✅ Si tu veux activer la confirmation par email plus tard :
+            // 🔓 Supprime le commentaire ci-dessous
+            // emailRedirectTo: 'https://ton-domaine.com/confirmation' 
+            // (Remplace par l'URL où rediriger après clic sur lien de confirmation)
           },
         });
+
         if (error) throw error;
+
+        // 🔽 Message selon le mode activé
         toast({
-          title: "Vérifiez votre email",
-          description: "Un lien de confirmation vous a été envoyé.",
+          title: "Inscription réussie",
+          description: 
+            // ✅ Avec confirmation email activée :
+            // "Un lien de confirmation vous a été envoyé par email."
+            
+            // ✅ Sans confirmation (actuel) :
+            "Bienvenue dans Quiz Karoka!",
         });
+
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ 
-          email, 
-          password 
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
         if (error) throw error;
+
         toast({
           title: "Connexion réussie",
           description: "Bienvenue dans Quiz Karoka!",
         });
+
+        // Facultatif : Redirection vers dashboard ou quiz
+        // window.location.href = "/quiz";
       }
     } catch (error: any) {
       toast({
@@ -77,10 +94,10 @@ export function AuthForm() {
             {isSignUp && (
               <Input
                 type="text"
-                placeholder="Nom d'affichage"
+                placeholder="Nom d\'affichage"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                required={isSignUp}
+                required
               />
             )}
             <Input
@@ -99,7 +116,7 @@ export function AuthForm() {
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Chargement...' : (isSignUp ? 'S\'inscrire' : 'Se connecter')}
+            {loading ? 'Chargement...' : (isSignUp ? "S'inscrire" : 'Se connecter')}
           </Button>
           <Button
             type="button"
@@ -108,8 +125,8 @@ export function AuthForm() {
             onClick={() => setIsSignUp(!isSignUp)}
           >
             {isSignUp 
-              ? 'Déjà un compte? Connectez-vous' 
-              : 'Pas de compte? Inscrivez-vous'}
+              ? 'Déjà un compte ? Connectez-vous' 
+              : 'Pas de compte ? Inscrivez-vous'}
           </Button>
         </form>
       </CardContent>
