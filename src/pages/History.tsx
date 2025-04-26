@@ -108,20 +108,6 @@ export default function History() {
     try {
       const doc = new jsPDF();
       const formattedDate = formatDate(result.created_at);
-
-      // Charger l'image du logo
-      const logo = await fetch('/favicon-96x96.png')
-        .then(res => res.blob())
-        .then(blob => new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        }));
-
-      // Ajouter le logo
-  doc.addImage('/favicon-96x96.png', 'PNG', 150, 10, 40, 20); // (image, format, x, y, width, height)
-
       // Configuration des polices
       doc.setFont('helvetica');
 
