@@ -94,7 +94,7 @@ export default function Quiz() {
     if (isCorrect) {
       setScore(score + 1);
     } else {
-      //  Enregistrer la réponse incorrecte dans le tableau
+      // Enregistrer la réponse incorrecte dans le tableau
       setIncorrectAnswers((prev) => [
         ...prev,
         {

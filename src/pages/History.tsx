@@ -23,7 +23,7 @@ type QuizResult = {
   total_questions: number;
   percentage: number;
   created_at: string;
-  incorrect_answers: IncorrectAnswer[]; //  Intégration des mauvaises réponses
+  incorrect_answers: IncorrectAnswer[]; // Intégration des mauvaises réponses
 };
 
 export default function History() {
