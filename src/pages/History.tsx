@@ -64,16 +64,14 @@ export default function History() {
 
   const parseIncorrectAnswers = (answers: any): IncorrectAnswer[] => {
     if (!answers) return [];
-    
+
     try {
       let parsedAnswers = typeof answers === 'string' 
         ? JSON.parse(answers) 
         : answers;
 
-      // Force le format en tableau
       if (!Array.isArray(parsedAnswers)) parsedAnswers = [parsedAnswers];
 
-      // Filtrage des mauvaises réponses
       return parsedAnswers.filter((item: any) => {
         const userAnswer = item.user_answer?.toString().toLowerCase().trim();
         const correctAnswer = item.correct_answer?.toString().toLowerCase().trim();
@@ -90,7 +88,7 @@ export default function History() {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) throw new Error('Invalid date');
-      
+
       return [
         date.getFullYear(),
         String(date.getMonth() + 1).padStart(2, '0'),
@@ -106,54 +104,47 @@ export default function History() {
     }
   };
 
-const generatePDF = (result: QuizResult) => {
-  try {
-    const doc = new jsPDF();
-    const formattedDate = formatDate(result.created_at);
+  const generatePDF = (result: QuizResult) => {
+    try {
+      const doc = new jsPDF();
+      const formattedDate = formatDate(result.created_at);
 
-    // Configuration de base
-    doc.setFont('helvetica');
+      // Titre principal
+      doc.setFont('helvetica');
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bolditalic');
+      doc.setTextColor(118, 2, 10);
+      doc.text('RESULTATS DU QUIZ', 20, 20);
 
-    // Titre principal
-    doc.setFontSize(20);
-    doc.setFont(undefined, 'bolditalic');
-    doc.setTextColor(118, 2, 10); // Couleur rouge foncé pour le titre
-    doc.text('RESULTATS DU QUIZ', 20, 20);
+      // Informations utilisateur
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      let yPosition = 40;
 
-    // Informations utilisateur
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    let yPosition = 40;
+      const userInfo = [
+        { label: 'Nom', value: result.display_name || 'Non spécifié' },
+        { label: 'Email', value: result.user_email || 'Non spécifié' },
+        { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
+        { label: 'Pourcentage', value: `${result.percentage || 0}%` },
+        { label: 'Date', value: formattedDate }
+      ];
 
-    const userInfo = [
-      { label: 'Nom', value: result.display_name || 'Non spécifié' },
-      { label: 'Email', value: result.user_email || 'Non spécifié' },
-      { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
-      { label: 'Pourcentage', value: `${result.percentage || 0}%` },
-      { label: 'Date', value: formattedDate }
-    ];
+      userInfo.forEach(info => {
+        doc.setTextColor(118, 2, 10);
+        doc.text(`${info.label}:`, 20, yPosition);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${info.value}`, 50, yPosition);
+        yPosition += 10;
+      });
 
-    userInfo.forEach(info => {
-      // Le mot-clé ("Nom:", "Email:", etc.) en rouge foncé
-      doc.setTextColor(118, 2, 10); 
-      doc.text(`${info.label}:`, 20, yPosition);
+      // Section des mauvaises réponses
+      if (result.incorrect_answers && result.incorrect_answers.length > 0) {
+        yPosition += 10;
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(118, 2, 10);
+        doc.text('Questions mal répondues:', 20, yPosition);
 
-      // La valeur (nom, email, score...) en noir
-      doc.setTextColor(0, 0, 0); 
-      doc.text(`${info.value}`, 50, yPosition);
-
-      yPosition += 10;
-    });
-
-    // Section des mauvaises réponses
-    if (result.incorrect_answers && result.incorrect_answers.length > 0) {
-      yPosition += 10;
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(118, 2, 10); // Couleur rouge foncé pour le titre
-      doc.text('Questions mal répondues:', 20, yPosition);
-    }
-        
         const tableData = result.incorrect_answers.map(item => [
           item.question || 'Question non disponible',
           item.user_answer || 'Aucune réponse',
@@ -163,19 +154,19 @@ const generatePDF = (result: QuizResult) => {
         autoTable(doc, {
           head: [['Question', 'Votre réponse', 'Bonne réponse']],
           body: tableData,
-          startY: yPosition + 20,
+          startY: yPosition + 10,
           styles: { 
             fontSize: 10,
             cellPadding: 3,
             overflow: 'linebreak'
           },
           headStyles: { 
-            fillColor: [118, 2, 10], // Rouge bordeaux
+            fillColor: [118, 2, 10],
             textColor: 255,
             fontStyle: 'bold'
           },
           alternateRowStyles: { 
-            fillColor: [245, 245, 245] 
+            fillColor: [245, 245, 245]
           }
         });
       }
@@ -206,7 +197,7 @@ const generatePDF = (result: QuizResult) => {
           <h1 className="text-3xl font-bold">Historique des Quiz</h1>
           <Button variant="outline" onClick={() => navigate('/')}>Retour</Button>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <Table>
             <TableHeader className="bg-gray-50">
@@ -227,8 +218,8 @@ const generatePDF = (result: QuizResult) => {
                     <span>{result.display_name || 'Anonyme'}</span>
                   </TableCell>
                   <TableCell className="px-6 py-4">{result.user_email || 'Non spécifié'}</TableCell>
-                  <TableCell className="px-6 py-4">{result.score || 0}/{result.total_questions || 0}</TableCell>
-                  <TableCell className="px-6 py-4">{result.percentage?.toFixed(2) || 0}%</TableCell>
+                  <TableCell className="px-6 py-4">{result.score}/{result.total_questions}</TableCell>
+                  <TableCell className="px-6 py-4">{result.percentage.toFixed(2)}%</TableCell>
                   <TableCell className="px-6 py-4">{formatDate(result.created_at)}</TableCell>
                   <TableCell className="px-6 py-4">
                     <Button 
