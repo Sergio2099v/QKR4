@@ -42,7 +42,7 @@ const Profile = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Profil utilisateur</h1>
       <div className="bg-muted p-4 rounded-lg mb-4">
-        <p><strong>Nom :</strong> {user.users?.full_name ?? "Nom non défini"}</p>
+     
         <p><strong>Email :</strong> {user.email}</p>
         <p><strong>Créé le :</strong> {new Date(user.created_at).toLocaleString()}</p>
       </div>
