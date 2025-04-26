@@ -56,7 +56,7 @@ export default function History() {
     const cleanedData = data?.map(item => ({
       ...item,
       incorrect_answers: parseIncorrectAnswers(item.incorrect_answers),
-      percentage: parseFloat(item.percentage.toFixed(2))
+      percentage: parseFloat(item.percentage.toFixed(2)),
     })) || [];
 
     setResults(cleanedData);
@@ -66,143 +66,112 @@ export default function History() {
     if (!answers) return [];
 
     try {
-      let parsedAnswers = typeof answers === 'string' 
-        ? JSON.parse(answers) 
-        : answers;
-
-      if (!Array.isArray(parsedAnswers)) parsedAnswers = [parsedAnswers];
-
-      return parsedAnswers.filter((item: any) => {
-        const userAnswer = item.user_answer?.toString().toLowerCase().trim();
-        const correctAnswer = item.correct_answer?.toString().toLowerCase().trim();
-        return userAnswer !== correctAnswer;
+      let parsed = typeof answers === 'string' ? JSON.parse(answers) : answers;
+      if (!Array.isArray(parsed)) parsed = [parsed];
+      return parsed.filter((it: any) => {
+        const ua = it.user_answer?.toString().toLowerCase().trim();
+        const ca = it.correct_answer?.toString().toLowerCase().trim();
+        return ua !== ca;
       });
-
     } catch (e) {
-      console.error('Error parsing incorrect answers:', answers, e);
+      console.error('Error parsing incorrect_answers:', answers, e);
       return [];
     }
   };
 
   const formatDate = (dateString: string): string => {
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) throw new Error('Invalid date');
-
-      return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, '0'),
-        String(date.getDate()).padStart(2, '0'),
-        '-',
-        String(date.getSeconds()).padStart(2, '0'),
-        String(date.getMinutes()).padStart(2, '0'),
-        String(date.getHours()).padStart(2, '0')
-      ].join('');
-    } catch (e) {
-      console.error('Error formatting date:', dateString, e);
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) throw new Error('Invalid date');
+      const YYYY = d.getFullYear();
+      const MM = String(d.getMonth() + 1).padStart(2, '0');
+      const DD = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return `${YYYY}${MM}${DD}-${hh}${mm}${ss}`;
+    } catch {
       return 'Date-Invalide';
     }
   };
 
   const generatePDF = (result: QuizResult) => {
-  if (typeof window === 'undefined') {
-    console.error('PDF generation is désactivé côté serveur');
-    return;
-  }
-
-  let doc;
-  let filename = '';
-
-  try {
-    doc = new jsPDF();
-    const formattedDate = formatDate(result.created_at);
-
-    // Titre principal
-    doc.setFont('helvetica');
-    doc.setFontSize(20);
-    doc.setFont(undefined, 'bolditalic');
-    doc.setTextColor(118, 2, 10);
-    doc.text('RESULTATS DU QUIZ', 20, 20);
-
-    // Infos utilisateur
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    let yPosition = 40;
-
-    const userInfo = [
-      { label: 'Nom', value: result.display_name || 'Non spécifié' },
-      { label: 'Email', value: result.user_email || 'Non spécifié' },
-      { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
-      { label: 'Pourcentage', value: `${result.percentage || 0}%` },
-      { label: 'Date', value: formattedDate }
-    ];
-
-    userInfo.forEach(info => {
-      doc.setTextColor(118, 2, 10);
-      doc.text(`${info.label}:`, 20, yPosition);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${info.value}`, 50, yPosition);
-      yPosition += 10;
-    });
-
-    // Section mauvaises réponses
-    if (result.incorrect_answers && result.incorrect_answers.length > 0) {
-      yPosition += 10;
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(118, 2, 10);
-      doc.text('Questions mal répondues:', 20, yPosition);
-
-      const tableData = result.incorrect_answers.map(item => [
-        item.question || 'Question non disponible',
-        item.user_answer || 'Aucune réponse',
-        item.correct_answer || 'Réponse non disponible'
-      ]);
-
-      autoTable(doc, {
-        head: [['Question', 'Votre réponse', 'Bonne réponse']],
-        body: tableData,
-        startY: yPosition + 10,
-        styles: {
-          fontSize: 10,
-          cellPadding: 3,
-          overflow: 'linebreak'
-        },
-        headStyles: {
-          fillColor: [118, 2, 10],
-          textColor: 255,
-          fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245]
-        }
-      });
+    if (typeof window === 'undefined') {
+      console.error('PDF generation disabled on server side');
+      return;
     }
 
-    // Pied de page
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(100, 100, 100);
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.text('Quiz Karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
+    try {
+      const doc = new jsPDF();
+      const formattedDate = formatDate(result.created_at);
 
-    // Construction du nom du fichier
-    filename = `quiz-result-${result.display_name || 'anonymous'}-${formattedDate}.pdf`
-      .replace(/\s+/g, '-')
-      .replace(/[^a-zA-Z0-9-.]/g, '');
-    
-  } catch (error) {
-    console.error('Erreur lors de la génération du PDF:', error);
-    alert(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
-    return;
-  }
+      // Titre
+      doc.setFont('helvetica');
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bolditalic');
+      doc.setTextColor(118, 2, 10);
+      doc.text('RESULTATS DU QUIZ', 20, 20);
 
-  // Si tout est bon, seulement maintenant on save
-  if (doc) {
-    doc.save(filename);
-  }
-};
+      // Infos utilisateur
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      let y = 40;
+      const userInfo = [
+        { label: 'Nom', value: result.display_name || 'Non spécifié' },
+        { label: 'Email', value: result.user_email || 'Non spécifié' },
+        { label: 'Score', value: `${result.score}/${result.total_questions}` },
+        { label: 'Pourcentage', value: `${result.percentage.toFixed(2)}%` },
+        { label: 'Date', value: formattedDate },
+      ];
+      userInfo.forEach(info => {
+        doc.setTextColor(118, 2, 10);
+        doc.text(`${info.label}:`, 20, y);
+        doc.setTextColor(0, 0, 0);
+        doc.text(info.value, 60, y);
+        y += 10;
+      });
 
+      // Mauvaises réponses
+      if (result.incorrect_answers && result.incorrect_answers.length > 0) {
+        y += 10;
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(118, 2, 10);
+        doc.text('Questions mal répondues:', 20, y);
+
+        const body = result.incorrect_answers.map(it => [
+          it.question || '—',
+          it.user_answer || '—',
+          it.correct_answer || '—',
+        ]);
+        autoTable(doc, {
+          head: [['Question', 'Votre réponse', 'Bonne réponse']],
+          body,
+          startY: y + 10,
+          styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' },
+          headStyles: { fillColor: [118, 2, 10], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+        });
+      }
+
+      // Pied de page
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      const ph = doc.internal.pageSize.getHeight();
+      doc.text(`Quiz Karoka – ${new Date().toLocaleDateString()}`, 20, ph - 10);
+
+      // Sauvegarde dans le try !
+      const fname = `quiz-result-${(result.display_name || 'anon')}-${formattedDate}.pdf`
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9-_.]/g, '');
+      doc.save(fname);
+
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      // Pas d'alert() côté build/Vercel
+    }
+  };
 
   return (
     <div className="min-h-screen p-8">
@@ -211,7 +180,6 @@ export default function History() {
           <h1 className="text-3xl font-bold">Historique des Quiz</h1>
           <Button variant="outline" onClick={() => navigate('/')}>Retour</Button>
         </div>
-
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <Table>
             <TableHeader className="bg-gray-50">
@@ -225,24 +193,19 @@ export default function History() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results.map((result) => (
+              {results.map(result => (
                 <TableRow key={result.id} className="hover:bg-gray-50">
                   <TableCell className="px-6 py-4 flex items-center gap-2">
                     <UserAvatar name={result.display_name} />
-                    <span>{result.display_name || 'Anonyme'}</span>
+                    {result.display_name}
                   </TableCell>
-                  <TableCell className="px-6 py-4">{result.user_email || 'Non spécifié'}</TableCell>
+                  <TableCell className="px-6 py-4">{result.user_email}</TableCell>
                   <TableCell className="px-6 py-4">{result.score}/{result.total_questions}</TableCell>
                   <TableCell className="px-6 py-4">{result.percentage.toFixed(2)}%</TableCell>
                   <TableCell className="px-6 py-4">{formatDate(result.created_at)}</TableCell>
                   <TableCell className="px-6 py-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => generatePDF(result)}
-                      className="flex items-center gap-2"
-                    >
-                      <Download size={16} />
-                      <span></span>
+                    <Button onClick={() => generatePDF(result)} className="flex items-center gap-2">
+                      <Download size={16}/>
                     </Button>
                   </TableCell>
                 </TableRow>
