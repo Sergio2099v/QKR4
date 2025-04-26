@@ -98,7 +98,7 @@ export default function History() {
       
       // 1. En-tête du document
       doc.setFontSize(20);
-      doc.setFont(courier, 'bold');
+      doc.setFont(helvetica , 'bold');
       doc.setTextColor(33, 33, 33); // Noir
       doc.text('RESULTATS DU QUIZ', 20, 20);
 
@@ -136,14 +136,14 @@ export default function History() {
           ]);
 
         // Police monospace pour le tableau
-        doc.setFont('courier');
+        doc.setFont('helvetica ');
         
         autoTable(doc, {
           head: [['Question', 'Votre réponse', 'Bonne réponse']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
-            font: 'courier',
+            font: 'helvetica ',
             fontSize: 10,
             cellPadding: 3,
             overflow: 'linebreak',
