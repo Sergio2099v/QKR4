@@ -110,7 +110,7 @@ export default function History() {
       const formattedDate = formatDate(result.created_at);
 
       // Charger l'image du logo
-      const logo = await fetch('/favicon-96x96.png')
+      const logo = await fetch('/favicon.svg')
         .then(res => res.blob())
         .then(blob => new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -120,7 +120,7 @@ export default function History() {
         }));
 
       // Ajouter le logo
-      doc.addImage(logo, 'PNG', 150, 10, 40, 20); // (image, format, x, y, width, height)
+      doc.addImage(logo, 'SVG', 150, 10, 40, 20); // (image, format, x, y, width, height)
 
       // Configuration des polices
       doc.setFont('helvetica');
