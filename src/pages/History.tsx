@@ -70,8 +70,10 @@ export default function History() {
         ? JSON.parse(answers) 
         : answers;
 
+      // Force le format en tableau
       if (!Array.isArray(parsedAnswers)) parsedAnswers = [parsedAnswers];
 
+      // Filtrage des mauvaises réponses
       return parsedAnswers.filter((item: any) => {
         const userAnswer = item.user_answer?.toString().toLowerCase().trim();
         const correctAnswer = item.correct_answer?.toString().toLowerCase().trim();
@@ -104,13 +106,14 @@ export default function History() {
     }
   };
 
-  const generatePDF = async (result: QuizResult) => {
+  const generatePDF = (result: QuizResult) => {
     try {
       const doc = new jsPDF();
       const formattedDate = formatDate(result.created_at);
+
       // Configuration des polices
       doc.setFont('helvetica');
-
+      
       // En-tête
       doc.setFontSize(20);
       doc.setFont(undefined, 'bold');
@@ -120,7 +123,7 @@ export default function History() {
       // Informations utilisateur
       doc.setFontSize(12);
       doc.setFont(undefined, 'normal');
-      let yPosition = 50;
+      let yPosition = 40;
       
       const userInfo = [
         `Nom: ${result.display_name || 'Non spécifié'}`,
@@ -140,7 +143,7 @@ export default function History() {
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
-
+        
         const tableData = result.incorrect_answers.map(item => [
           item.question || 'Question non disponible',
           item.user_answer || 'Aucune réponse',
@@ -148,7 +151,7 @@ export default function History() {
         ]);
 
         autoTable(doc, {
-          head: [['Questions', 'Vos réponses', 'Bonnes réponses']],
+          head: [['Question', 'Votre réponse', 'Bonne réponse']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
@@ -157,12 +160,12 @@ export default function History() {
             overflow: 'linebreak'
           },
           headStyles: { 
-            fillColor: [118, 2, 10],
+            fillColor: [118, 2, 10], // Rouge bordeaux
             textColor: 255,
             fontStyle: 'bold'
           },
           alternateRowStyles: { 
-            fillColor: [245, 245, 245]
+            fillColor: [245, 245, 245] 
           }
         });
       }
