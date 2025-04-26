@@ -79,11 +79,11 @@ export default function History() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Utilisateur</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>Pourcentage</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>Utilisateurs</TableHead>
+              <TableHead>Emails</TableHead>
+              <TableHead>Scores</TableHead>
+              <TableHead>Pourcentages</TableHead>
+              <TableHead>Dates</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
