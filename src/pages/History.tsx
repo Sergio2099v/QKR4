@@ -116,7 +116,7 @@ export default function History() {
       
       // En-tête
       doc.setFontSize(20);
-      doc.setFont(undefined, 'bold', 'italic');
+      doc.setFont(undefined, 'bolditalic');
       doc.setTextColor(118, 2, 10);
       doc.text('RESULTATS DU QUIZ', 20, 20);
 
