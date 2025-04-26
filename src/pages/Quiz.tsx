@@ -84,60 +84,61 @@ export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  const [incorrectAnswers, setIncorrectAnswers] = useState([]); //  Ajout pour stocker les mauvaises réponses
+  const [incorrectAnswers, setIncorrectAnswers] = useState([]);
 
   const handleAnswerClick = async (selectedAnswer: string) => {
     const current = questions[currentQuestion];
     const correctAnswer = current.options[current.correct];
     const isCorrect = selectedAnswer === correctAnswer;
 
-    if (isCorrect) {
-      setScore(score + 1);
-    } else {
-      // Enregistrer la réponse incorrecte dans le tableau
-      setIncorrectAnswers((prev) => [
-        ...prev,
-        {
-          question: current.question,
-          user_answer: selectedAnswer,
-          correct_answer: correctAnswer,
-        }
-      ]);
-    }
+    const newScore = score + (isCorrect ? 1 : 0);
+    const isLastQuestion = currentQuestion + 1 >= questions.length;
 
-    const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < questions.length) {
-      setCurrentQuestion(nextQuestion);
-    } else {
+    const updatedIncorrectAnswers = isCorrect
+      ? incorrectAnswers
+      : [
+          ...incorrectAnswers,
+          {
+            question: current.question,
+            user_answer: selectedAnswer,
+            correct_answer: correctAnswer,
+          },
+        ];
+
+    if (isLastQuestion) {
       setShowScore(true);
-      const finalScore = score + (isCorrect ? 1 : 0);
-      const percentage = (finalScore / questions.length) * 100;
+      setScore(newScore); // Pour affichage à l'écran
+      const percentage = (newScore / questions.length) * 100;
 
-      //  Ajout de incorrect_answers lors de l'enregistrement dans la base
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { error } = await supabase.from('quiz_results').insert({
+        const { error } = await supabase.from("quiz_results").insert({
           user_id: user.id,
           user_email: user.email,
           display_name: user.user_metadata.display_name || user.email,
-          score: finalScore,
+          score: newScore,
           total_questions: questions.length,
-          percentage: percentage,
-          incorrect_answers: incorrectAnswers //  ICI ajouté dans l'objet enregistré
+          percentage,
+          incorrect_answers: updatedIncorrectAnswers,
         });
 
         if (error) {
           toast.error("Erreur lors de l'enregistrement du résultat");
-          console.error('Error saving result:', error);
+          console.error("Erreur Supabase :", error);
         }
       }
+
+    } else {
+      setCurrentQuestion((prev) => prev + 1);
+      setScore(newScore);
+      setIncorrectAnswers(updatedIncorrectAnswers);
     }
   };
 
   const handleRetry = () => {
     setCurrentQuestion(0);
     setScore(0);
-    setIncorrectAnswers([]); //  Remise à zéro des réponses incorrectes
+    setIncorrectAnswers([]);
     setShowScore(false);
   };
 
@@ -162,18 +163,18 @@ export default function Quiz() {
                 </CardDescription>
               </CardHeader>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={handleRetry}>
-                  Réessayer
+                <Button styles="background-color: black" variant="outline" onClick={handleRetry}>
+                  Réessayer 
                 </Button>
-                <Button onClick={handleBackToHome}>
-                  Retour à l'accueil
-                </Button>
+                
               </CardFooter>
             </>
           ) : (
             <>
               <CardHeader>
-                <CardTitle>Question {currentQuestion + 1}/{questions.length}</CardTitle>
+                <CardTitle>
+                  Question {currentQuestion + 1}/{questions.length}
+                </CardTitle>
                 <CardDescription>
                   {questions[currentQuestion].question}
                 </CardDescription>
