@@ -98,13 +98,13 @@ export default function History() {
       
       // 1. En-tête du document
       doc.setFontSize(20);
-      doc.setFont(Robotto, 'bold');
+      doc.setFont(courier, 'bold');
       doc.setTextColor(33, 33, 33); // Noir
-      doc.text('Résultats du Quiz', 20, 20);
+      doc.text('RESULTATS DU QUIZ', 20, 20);
 
       // 2. Informations utilisateur
       doc.setFontSize(12);
-      doc.setFont(Robotto, 'normal');
+      doc.setFont(helvetica , 'normal');
       let yPosition = 40;
       
       const userInfo = [
@@ -123,7 +123,7 @@ export default function History() {
       // 3. Questions incorrectes
       if (result.incorrect_answers && result.incorrect_answers.length > 0) {
         doc.setFontSize(16);
-        doc.setFont(Robotto, 'bold');
+        doc.setFont(helvetica , 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
         
         // Préparation des données du tableau
