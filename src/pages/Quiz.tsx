@@ -163,9 +163,7 @@ export default function Quiz() {
                 </CardDescription>
               </CardHeader>
               <CardFooter className="flex justify-between">
-                <Button styles="background-color: black" variant="outline" onClick={handleRetry}>
-                  Réessayer 
-                </Button>
+             
                 
               </CardFooter>
             </>
