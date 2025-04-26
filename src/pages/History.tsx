@@ -151,7 +151,7 @@ export default function History() {
         ]);
 
         autoTable(doc, {
-          head: [['Question', 'Votre réponse', 'Bonne réponse']],
+          head: [['Questions', 'Vos réponses', 'Bonnes réponses']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
