@@ -36,7 +36,16 @@ export default function History() {
   const fetchResults = async () => {
     const { data, error } = await supabase
       .from('quiz_results')
-      .select('*')
+      .select(`
+        id,
+        display_name,
+        user_email,
+        score,
+        total_questions,
+        percentage,
+        created_at,
+        incorrect_answers
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -57,11 +66,20 @@ export default function History() {
     if (!answers) return [];
     
     try {
-      if (typeof answers === 'string') {
-        const parsed = JSON.parse(answers);
-        return Array.isArray(parsed) ? parsed : [parsed];
-      }
-      return Array.isArray(answers) ? answers : [answers];
+      let parsedAnswers = typeof answers === 'string' 
+        ? JSON.parse(answers) 
+        : answers;
+
+      // Force le format en tableau
+      if (!Array.isArray(parsedAnswers)) parsedAnswers = [parsedAnswers];
+
+      // Filtrage des mauvaises réponses
+      return parsedAnswers.filter((item: any) => {
+        const userAnswer = item.user_answer?.toString().toLowerCase().trim();
+        const correctAnswer = item.correct_answer?.toString().toLowerCase().trim();
+        return userAnswer !== correctAnswer;
+      });
+
     } catch (e) {
       console.error('Error parsing incorrect answers:', answers, e);
       return [];
@@ -94,17 +112,17 @@ export default function History() {
       const formattedDate = formatDate(result.created_at);
 
       // Configuration des polices
-      doc.setFont('undefined'); // Police par défaut
+      doc.setFont('helvetica');
       
-      // 1. En-tête du document
+      // En-tête
       doc.setFontSize(20);
-      doc.setFont(undefined , 'bold');
-      doc.setTextColor(33, 33, 33); // Noir
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(33, 33, 33);
       doc.text('RESULTATS DU QUIZ', 20, 20);
 
-      // 2. Informations utilisateur
+      // Informations utilisateur
       doc.setFontSize(12);
-      doc.setFont(undefined , 'normal');
+      doc.setFont(undefined, 'normal');
       let yPosition = 40;
       
       const userInfo = [
@@ -120,55 +138,46 @@ export default function History() {
         yPosition += 10;
       });
 
-      // 3. Questions incorrectes
+      // Section des mauvaises réponses
       if (result.incorrect_answers && result.incorrect_answers.length > 0) {
         doc.setFontSize(16);
-        doc.setFont(undefined , 'bold');
+        doc.setFont(undefined, 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
         
-        // Préparation des données du tableau
-        const tableData = result.incorrect_answers
-          .filter(item => item)
-          .map(item => [
-            item.question || 'Question non disponible',
-            item.user_answer || 'Non répondue',
-            item.correct_answer || 'Réponse non disponible'
-          ]);
+        const tableData = result.incorrect_answers.map(item => [
+          item.question || 'Question non disponible',
+          item.user_answer || 'Aucune réponse',
+          item.correct_answer || 'Réponse non disponible'
+        ]);
 
-        // Police monospace pour le tableau
-        doc.setFont('undefined ');
-        
         autoTable(doc, {
-          head: [['Questions', 'Vos Réponses', 'Bonnes Réponses']],
+          head: [['Question', 'Votre réponse', 'Bonne réponse']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
-            font: 'undefined ',
             fontSize: 10,
             cellPadding: 3,
-            overflow: 'linebreak',
-            textColor: [0, 0, 0] // Noir
+            overflow: 'linebreak'
           },
           headStyles: { 
             fillColor: [118, 2, 10], // Rouge bordeaux
-            textColor: 255, // Blanc
+            textColor: 255,
             fontStyle: 'bold'
           },
           alternateRowStyles: { 
-            fillColor: [245, 245, 245] // Gris clair
-          },
-          margin: { horizontal: 15 }
+            fillColor: [245, 245, 245] 
+          }
         });
       }
 
-      // 4. Pied de page
+      // Pied de page
       doc.setFontSize(10);
-      doc.setFont('undefined', 'italic');
+      doc.setFont('helvetica', 'italic');
       doc.setTextColor(100, 100, 100);
       const pageHeight = doc.internal.pageSize.getHeight();
-      doc.text('Quiz karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
+      doc.text('Quiz Karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
 
-      // 5. Sauvegarde
+      // Génération du fichier
       const filename = `quiz-result-${result.display_name || 'anonymous'}-${formattedDate}.pdf`
         .replace(/\s+/g, '-')
         .replace(/[^a-zA-Z0-9-.]/g, '');
