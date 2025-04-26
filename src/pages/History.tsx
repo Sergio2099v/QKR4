@@ -98,13 +98,13 @@ export default function History() {
       
       // 1. En-tête du document
       doc.setFontSize(20);
-      doc.setFont(undefined, 'bold');
+      doc.setFont(Robotto, 'bold');
       doc.setTextColor(33, 33, 33); // Noir
       doc.text('Résultats du Quiz', 20, 20);
 
       // 2. Informations utilisateur
       doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
+      doc.setFont(Robotto, 'normal');
       let yPosition = 40;
       
       const userInfo = [
@@ -123,7 +123,7 @@ export default function History() {
       // 3. Questions incorrectes
       if (result.incorrect_answers && result.incorrect_answers.length > 0) {
         doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
+        doc.setFont(Robotto, 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
         
         // Préparation des données du tableau
@@ -150,7 +150,7 @@ export default function History() {
             textColor: [0, 0, 0] // Noir
           },
           headStyles: { 
-            fillColor: [41, 128, 185], // Bleu
+            fillColor: [255, 0, 10], // Bleu
             textColor: 255, // Blanc
             fontStyle: 'bold'
           },
