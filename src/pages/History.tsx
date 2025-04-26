@@ -70,10 +70,8 @@ export default function History() {
         ? JSON.parse(answers) 
         : answers;
 
-      // Force le format en tableau
       if (!Array.isArray(parsedAnswers)) parsedAnswers = [parsedAnswers];
 
-      // Filtrage des mauvaises réponses
       return parsedAnswers.filter((item: any) => {
         const userAnswer = item.user_answer?.toString().toLowerCase().trim();
         const correctAnswer = item.correct_answer?.toString().toLowerCase().trim();
@@ -106,14 +104,27 @@ export default function History() {
     }
   };
 
-  const generatePDF = (result: QuizResult) => {
+  const generatePDF = async (result: QuizResult) => {
     try {
       const doc = new jsPDF();
       const formattedDate = formatDate(result.created_at);
 
+      // Charger l'image du logo
+      const logo = await fetch('/favicon-96x96.png')
+        .then(res => res.blob())
+        .then(blob => new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }));
+
+      // Ajouter le logo
+      doc.addImage(logo, 'PNG', 150, 10, 40, 20); // (image, format, x, y, width, height)
+
       // Configuration des polices
       doc.setFont('helvetica');
-      
+
       // En-tête
       doc.setFontSize(20);
       doc.setFont(undefined, 'bold');
@@ -123,7 +134,7 @@ export default function History() {
       // Informations utilisateur
       doc.setFontSize(12);
       doc.setFont(undefined, 'normal');
-      let yPosition = 40;
+      let yPosition = 50;
       
       const userInfo = [
         `Nom: ${result.display_name || 'Non spécifié'}`,
@@ -143,7 +154,7 @@ export default function History() {
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
-        
+
         const tableData = result.incorrect_answers.map(item => [
           item.question || 'Question non disponible',
           item.user_answer || 'Aucune réponse',
@@ -160,12 +171,12 @@ export default function History() {
             overflow: 'linebreak'
           },
           headStyles: { 
-            fillColor: [118, 2, 10], // Rouge bordeaux
+            fillColor: [118, 2, 10],
             textColor: 255,
             fontStyle: 'bold'
           },
           alternateRowStyles: { 
-            fillColor: [245, 245, 245] 
+            fillColor: [245, 245, 245]
           }
         });
       }
