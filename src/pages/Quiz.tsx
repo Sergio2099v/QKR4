@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {  Card, CardContent,  CardDescription,  CardFooter,  CardHeader,  CardTitle,} from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -84,31 +84,46 @@ export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  
+  const [incorrectAnswers, setIncorrectAnswers] = useState([]); //  Ajout pour stocker les mauvaises réponses
+
   const handleAnswerClick = async (selectedAnswer: string) => {
-const isCorrect = selectedAnswer === questions[currentQuestion].options[questions[currentQuestion].correct];
+    const current = questions[currentQuestion];
+    const correctAnswer = current.options[current.correct];
+    const isCorrect = selectedAnswer === correctAnswer;
 
     if (isCorrect) {
       setScore(score + 1);
+    } else {
+      //  Enregistrer la réponse incorrecte dans le tableau
+      setIncorrectAnswers((prev) => [
+        ...prev,
+        {
+          question: current.question,
+          user_answer: selectedAnswer,
+          correct_answer: correctAnswer,
+        }
+      ]);
     }
-    
+
     const nextQuestion = currentQuestion + 1;
     if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
-      const percentage = (score / questions.length) * 100;
-      
-      // Save quiz result
+      const finalScore = score + (isCorrect ? 1 : 0);
+      const percentage = (finalScore / questions.length) * 100;
+
+      //  Ajout de incorrect_answers lors de l'enregistrement dans la base
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { error } = await supabase.from('quiz_results').insert({
           user_id: user.id,
           user_email: user.email,
           display_name: user.user_metadata.display_name || user.email,
-          score: score + (isCorrect ? 1 : 0),
+          score: finalScore,
           total_questions: questions.length,
-          percentage: percentage
+          percentage: percentage,
+          incorrect_answers: incorrectAnswers //  ICI ajouté dans l'objet enregistré
         });
 
         if (error) {
@@ -118,24 +133,25 @@ const isCorrect = selectedAnswer === questions[currentQuestion].options[question
       }
     }
   };
-  
+
   const handleRetry = () => {
     setCurrentQuestion(0);
     setScore(0);
+    setIncorrectAnswers([]); //  Remise à zéro des réponses incorrectes
     setShowScore(false);
   };
-  
+
   const handleBackToHome = () => {
     navigate('/');
   };
 
   const percentage = ((score / questions.length) * 100).toFixed(2);
-  
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Quiz Karoka</h1>
-        
+
         <Card className="w-full">
           {showScore ? (
             <>
@@ -165,9 +181,9 @@ const isCorrect = selectedAnswer === questions[currentQuestion].options[question
               <CardContent>
                 <div className="grid gap-3">
                   {questions[currentQuestion].options.map((option, index) => (
-                    <Button 
-                      key={index} 
-                      variant="outline" 
+                    <Button
+                      key={index}
+                      variant="outline"
                       className="justify-start text-left h-auto py-3"
                       onClick={() => handleAnswerClick(option)}
                     >
