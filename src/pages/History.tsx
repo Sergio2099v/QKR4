@@ -105,95 +105,104 @@ export default function History() {
   };
 
   const generatePDF = (result: QuizResult) => {
-    if (typeof window === 'undefined') {
-      // Empêcher le code de s'exécuter côté serveur
-      console.error('PDF generation is disabled on server side');
-      return;
-    }
+  if (typeof window === 'undefined') {
+    console.error('PDF generation is désactivé côté serveur');
+    return;
+  }
 
-    try {
-      const doc = new jsPDF();
-      const formattedDate = formatDate(result.created_at);
+  let doc;
+  let filename = '';
 
-      // Titre principal
-      doc.setFont('helvetica');
-      doc.setFontSize(20);
-      doc.setFont(undefined, 'bolditalic');
+  try {
+    doc = new jsPDF();
+    const formattedDate = formatDate(result.created_at);
+
+    // Titre principal
+    doc.setFont('helvetica');
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bolditalic');
+    doc.setTextColor(118, 2, 10);
+    doc.text('RESULTATS DU QUIZ', 20, 20);
+
+    // Infos utilisateur
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    let yPosition = 40;
+
+    const userInfo = [
+      { label: 'Nom', value: result.display_name || 'Non spécifié' },
+      { label: 'Email', value: result.user_email || 'Non spécifié' },
+      { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
+      { label: 'Pourcentage', value: `${result.percentage || 0}%` },
+      { label: 'Date', value: formattedDate }
+    ];
+
+    userInfo.forEach(info => {
       doc.setTextColor(118, 2, 10);
-      doc.text('RESULTATS DU QUIZ', 20, 20);
+      doc.text(`${info.label}:`, 20, yPosition);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${info.value}`, 50, yPosition);
+      yPosition += 10;
+    });
 
-      // Informations utilisateur
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
-      let yPosition = 40;
+    // Section mauvaises réponses
+    if (result.incorrect_answers && result.incorrect_answers.length > 0) {
+      yPosition += 10;
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(118, 2, 10);
+      doc.text('Questions mal répondues:', 20, yPosition);
 
-      const userInfo = [
-        { label: 'Nom', value: result.display_name || 'Non spécifié' },
-        { label: 'Email', value: result.user_email || 'Non spécifié' },
-        { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
-        { label: 'Pourcentage', value: `${result.percentage || 0}%` },
-        { label: 'Date', value: formattedDate }
-      ];
+      const tableData = result.incorrect_answers.map(item => [
+        item.question || 'Question non disponible',
+        item.user_answer || 'Aucune réponse',
+        item.correct_answer || 'Réponse non disponible'
+      ]);
 
-      userInfo.forEach(info => {
-        doc.setTextColor(118, 2, 10);
-        doc.text(`${info.label}:`, 20, yPosition);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`${info.value}`, 50, yPosition);
-        yPosition += 10;
+      autoTable(doc, {
+        head: [['Question', 'Votre réponse', 'Bonne réponse']],
+        body: tableData,
+        startY: yPosition + 10,
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: [118, 2, 10],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        }
       });
-
-      // Section des mauvaises réponses
-      if (result.incorrect_answers && result.incorrect_answers.length > 0) {
-        yPosition += 10;
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(118, 2, 10);
-        doc.text('Questions mal répondues:', 20, yPosition);
-
-        const tableData = result.incorrect_answers.map(item => [
-          item.question || 'Question non disponible',
-          item.user_answer || 'Aucune réponse',
-          item.correct_answer || 'Réponse non disponible'
-        ]);
-
-        autoTable(doc, {
-          head: [['Question', 'Votre réponse', 'Bonne réponse']],
-          body: tableData,
-          startY: yPosition + 10,
-          styles: { 
-            fontSize: 10,
-            cellPadding: 3,
-            overflow: 'linebreak'
-          },
-          headStyles: { 
-            fillColor: [118, 2, 10],
-            textColor: 255,
-            fontStyle: 'bold'
-          },
-          alternateRowStyles: { 
-            fillColor: [245, 245, 245]
-          }
-        });
-      }
-
-      // Pied de page
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(100, 100, 100);
-      const pageHeight = doc.internal.pageSize.getHeight();
-      doc.text('Quiz Karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
-
-      // Génération du fichier
-      const filename = `quiz-result-${result.display_name || 'anonymous'}-${formattedDate}.pdf`
-        .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9-.]/g, '');
-
-      doc.save(filename);
-    } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error);
     }
-  };
+
+    // Pied de page
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.text('Quiz Karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
+
+    // Construction du nom du fichier
+    filename = `quiz-result-${result.display_name || 'anonymous'}-${formattedDate}.pdf`
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9-.]/g, '');
+    
+  } catch (error) {
+    console.error('Erreur lors de la génération du PDF:', error);
+    alert(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    return;
+  }
+
+  // Si tout est bon, seulement maintenant on save
+  if (doc) {
+    doc.save(filename);
+  }
+};
+
 
   return (
     <div className="min-h-screen p-8">
