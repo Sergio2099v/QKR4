@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { Table,   TableBody,   TableCell,   TableHead,  TableHeader,  TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
@@ -8,11 +8,10 @@ import 'jspdf-autotable';
 import { Download } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 
-//  Ajout du type pour les mauvaises réponses
 type IncorrectAnswer = {
-  question: string;
-  user_answer: string;
-  correct_answer: string;
+  question?: string;
+  user_answer?: string;
+  correct_answer?: string;
 };
 
 type QuizResult = {
@@ -23,7 +22,7 @@ type QuizResult = {
   total_questions: number;
   percentage: number;
   created_at: string;
-  incorrect_answers: IncorrectAnswer[]; // Intégration des mauvaises réponses
+  incorrect_answers: IncorrectAnswer[] | null;
 };
 
 export default function History() {
@@ -37,7 +36,7 @@ export default function History() {
   const fetchResults = async () => {
     const { data, error } = await supabase
       .from('quiz_results')
-      .select('*') //  on récupère tout, y compris incorrect_answers
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -45,45 +44,82 @@ export default function History() {
       return;
     }
 
-    setResults(data || []);
+    const cleanedData = data?.map(item => ({
+      ...item,
+      incorrect_answers: parseIncorrectAnswers(item.incorrect_answers)
+    })) || [];
+
+    setResults(cleanedData);
+  };
+
+  const parseIncorrectAnswers = (answers: any): IncorrectAnswer[] => {
+    if (!answers) return [];
+    
+    try {
+      if (typeof answers === 'string') {
+        return JSON.parse(answers);
+      }
+      return answers;
+    } catch (e) {
+      console.error('Error parsing incorrect answers:', e);
+      return [];
+    }
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}${month}${day}-${seconds}${minutes}${hours}`;
   };
 
   const generatePDF = (result: QuizResult) => {
-    const doc = new jsPDF();
+    try {
+      const doc = new jsPDF();
+      const formattedDate = formatDate(result.created_at);
 
-    // Infos générales
-    doc.setFontSize(20);
-    doc.text('Résultat du Quiz', 20, 20);
+      // Infos générales
+      doc.setFontSize(20);
+      doc.text('Résultat du Quiz', 20, 20);
 
-    doc.setFontSize(12);
-    doc.text(`Nom: ${result.display_name}`, 20, 40);
-    doc.text(`Email: ${result.user_email}`, 20, 50);
-    doc.text(`Score: ${result.score}/${result.total_questions}`, 20, 60);
-    doc.text(`Pourcentage: ${result.percentage}%`, 20, 70);
-    doc.text(`Date: ${new Date(result.created_at).toLocaleString()}`, 20, 80);
+      doc.setFontSize(12);
+      doc.text(`Nom: ${result.display_name}`, 20, 40);
+      doc.text(`Email: ${result.user_email}`, 20, 50);
+      doc.text(`Score: ${result.score}/${result.total_questions}`, 20, 60);
+      doc.text(`Pourcentage: ${result.percentage}%`, 20, 70);
+      doc.text(`Date: ${formattedDate}`, 20, 80);
 
-    //  Ajouter les mauvaises réponses dans le PDF si présentes
-    if (result.incorrect_answers && result.incorrect_answers.length > 0) {
-      doc.setFontSize(16);
-      doc.text('Questions mal répondues:', 20, 100);
+      // Mauvaises réponses
+      if (result.incorrect_answers && result.incorrect_answers.length > 0) {
+        doc.setFontSize(16);
+        doc.text('Questions mal répondues:', 20, 100);
 
-      const tableData = result.incorrect_answers.map((item) => [
-        item.question,
-        item.user_answer,
-        item.correct_answer,
-      ]);
+        const tableData = result.incorrect_answers.map(item => [
+          item.question || 'N/A',
+          item.user_answer || 'N/A',
+          item.correct_answer || 'N/A'
+        ]);
 
-      doc.autoTable({
-        head: [['Question', 'Votre réponse', 'Bonne réponse']],
-        body: tableData,
-        startY: 110,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [255, 0, 0] },
-      });
+        (doc as any).autoTable({
+          head: [['Question', 'Votre réponse', 'Bonne réponse']],
+          body: tableData,
+          startY: 110,
+          styles: { fontSize: 8, cellPadding: 2 },
+          headStyles: { fillColor: [255, 0, 0] },
+        });
+      }
+
+      const filename = `quiz-result-${result.display_name}-${formattedDate}.pdf`;
+      doc.save(filename);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Erreur lors de la génération du PDF');
     }
-
-    const filename = `quiz-result-${result.display_name}-${new Date().toISOString()}.pdf`;
-    doc.save(filename);
   };
 
   return (
@@ -114,7 +150,7 @@ export default function History() {
                 <TableCell>{result.user_email}</TableCell>
                 <TableCell>{result.score}/{result.total_questions}</TableCell>
                 <TableCell>{result.percentage}%</TableCell>
-                <TableCell>{new Date(result.created_at).toLocaleString()}</TableCell>
+                <TableCell>{formatDate(result.created_at)}</TableCell>
                 <TableCell>
                   <Button 
                     variant="outline" 
