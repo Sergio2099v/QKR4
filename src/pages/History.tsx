@@ -139,7 +139,7 @@ export default function History() {
         doc.setFont('undefined ');
         
         autoTable(doc, {
-          head: [['Question', 'Votre réponse', 'Bonne réponse']],
+          head: [['Questions', 'Vos Réponses', 'Bonnes Réponses']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
@@ -150,7 +150,7 @@ export default function History() {
             textColor: [0, 0, 0] // Noir
           },
           headStyles: { 
-            fillColor: [255, 0, 10], // Bleu
+            fillColor: [118, 2, 10], // Rouge bordeaux
             textColor: 255, // Blanc
             fontStyle: 'bold'
           },
