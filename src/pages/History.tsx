@@ -84,7 +84,7 @@ export default function History() {
               <TableHead>Score</TableHead>
               <TableHead>Pourcentage</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -107,7 +107,7 @@ export default function History() {
                     className="flex items-center gap-2"
                   >
                     <Download size={16} />
-                    <span>Télécharger PDF</span>
+                    <span>PDF</span>
                   </Button>
                 </TableCell>
               </TableRow>
