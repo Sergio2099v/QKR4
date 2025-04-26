@@ -105,6 +105,12 @@ export default function History() {
   };
 
   const generatePDF = (result: QuizResult) => {
+    if (typeof window === 'undefined') {
+      // Empêcher le code de s'exécuter côté serveur
+      console.error('PDF generation is disabled on server side');
+      return;
+    }
+
     try {
       const doc = new jsPDF();
       const formattedDate = formatDate(result.created_at);
@@ -185,8 +191,7 @@ export default function History() {
 
       doc.save(filename);
     } catch (error) {
-      console.error('PDF generation error:', error);
-      alert(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      console.error('Erreur lors de la génération du PDF:', error);
     }
   };
 
