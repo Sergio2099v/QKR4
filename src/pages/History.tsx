@@ -47,7 +47,7 @@ export default function History() {
     const cleanedData = data?.map(item => ({
       ...item,
       incorrect_answers: parseIncorrectAnswers(item.incorrect_answers),
-      percentage: parseFloat(item.percentage.toFixed(2)) // Assure un pourcentage valide
+      percentage: parseFloat(item.percentage.toFixed(2))
     })) || [];
 
     setResults(cleanedData);
@@ -93,12 +93,21 @@ export default function History() {
       const doc = new jsPDF();
       const formattedDate = formatDate(result.created_at);
 
-      // Infos générales
+      // Configuration des polices
+      doc.setFont('helvetica'); // Police par défaut
+      
+      // 1. En-tête du document
       doc.setFontSize(20);
-      doc.text('Résultat du Quiz', 20, 20);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(33, 33, 33); // Noir
+      doc.text('Résultats du Quiz', 20, 20);
 
-      // Contenu du PDF
-      const content = [
+      // 2. Informations utilisateur
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      let yPosition = 40;
+      
+      const userInfo = [
         `Nom: ${result.display_name || 'Non spécifié'}`,
         `Email: ${result.user_email || 'Non spécifié'}`,
         `Score: ${result.score || 0}/${result.total_questions || 0}`,
@@ -106,52 +115,67 @@ export default function History() {
         `Date: ${formattedDate}`
       ];
 
-      // Ajout du contenu principal
-      let yPosition = 40;
-      content.forEach(line => {
-        doc.setFontSize(12);
-        doc.text(line, 20, yPosition);
+      userInfo.forEach(info => {
+        doc.text(info, 20, yPosition);
         yPosition += 10;
       });
 
-      // Mauvaises réponses
+      // 3. Questions incorrectes
       if (result.incorrect_answers && result.incorrect_answers.length > 0) {
         doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
         
+        // Préparation des données du tableau
         const tableData = result.incorrect_answers
-          .filter(item => item) // Filtre les éléments null/undefined
+          .filter(item => item)
           .map(item => [
             item.question || 'Question non disponible',
             item.user_answer || 'Non répondue',
             item.correct_answer || 'Réponse non disponible'
           ]);
 
-        if (tableData.length > 0) {
-          autoTable(doc, {
-            head: [['Question', 'Votre réponse', 'Bonne réponse']],
-            body: tableData,
-            startY: yPosition + 20,
-            styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
-            margin: { horizontal: 20 }
-          });
-        }
+        // Police monospace pour le tableau
+        doc.setFont('courier');
+        
+        autoTable(doc, {
+          head: [['Question', 'Votre réponse', 'Bonne réponse']],
+          body: tableData,
+          startY: yPosition + 20,
+          styles: { 
+            font: 'courier',
+            fontSize: 10,
+            cellPadding: 3,
+            overflow: 'linebreak',
+            textColor: [0, 0, 0] // Noir
+          },
+          headStyles: { 
+            fillColor: [41, 128, 185], // Bleu
+            textColor: 255, // Blanc
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: { 
+            fillColor: [245, 245, 245] // Gris clair
+          },
+          margin: { horizontal: 15 }
+        });
       }
 
-      // Sauvegarde du PDF
+      // 4. Pied de page
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.text('Quiz karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
+
+      // 5. Sauvegarde
       const filename = `quiz-result-${result.display_name || 'anonymous'}-${formattedDate}.pdf`
-        .replace(/\s+/g, '-') // Remplace les espaces par des tirets
-        .replace(/[^a-zA-Z0-9-.]/g, ''); // Supprime les caractères spéciaux
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9-.]/g, '');
 
       doc.save(filename);
     } catch (error) {
-      console.error('Detailed PDF generation error:', {
-        error,
-        result,
-        incorrectAnswers: result.incorrect_answers
-      });
+      console.error('PDF generation error:', error);
       alert(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
