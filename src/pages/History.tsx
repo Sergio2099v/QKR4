@@ -106,43 +106,53 @@ export default function History() {
     }
   };
 
-  const generatePDF = (result: QuizResult) => {
-    try {
-      const doc = new jsPDF();
-      const formattedDate = formatDate(result.created_at);
+const generatePDF = (result: QuizResult) => {
+  try {
+    const doc = new jsPDF();
+    const formattedDate = formatDate(result.created_at);
 
-      // Configuration des polices
-      doc.setFont('helvetica');
-      
-      // En-tête
-      doc.setFontSize(20);
-      doc.setFont(undefined, 'bolditalic');
-      doc.setTextColor(118, 2, 10);
-      doc.text('RESULTATS DU QUIZ', 20, 20);
+    // Configuration de base
+    doc.setFont('helvetica');
 
-      // Informations utilisateur
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
-      let yPosition = 40;
-      
-      const userInfo = [
-        `Nom: ${result.display_name || 'Non spécifié'}`,
-        `Email: ${result.user_email || 'Non spécifié'}`,
-        `Score: ${result.score || 0}/${result.total_questions || 0}`,
-        `Pourcentage: ${result.percentage || 0}%`,
-        `Date: ${formattedDate}`
-      ];
+    // Titre principal
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bolditalic');
+    doc.setTextColor(118, 2, 10); // Couleur rouge foncé pour le titre
+    doc.text('RESULTATS DU QUIZ', 20, 20);
 
-      userInfo.forEach(info => {
-        doc.text(info, 20, yPosition);
-        yPosition += 10;
-      });
+    // Informations utilisateur
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    let yPosition = 40;
 
-      // Section des mauvaises réponses
-      if (result.incorrect_answers && result.incorrect_answers.length > 0) {
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text('Questions mal répondues:', 20, yPosition + 10);
+    const userInfo = [
+      { label: 'Nom', value: result.display_name || 'Non spécifié' },
+      { label: 'Email', value: result.user_email || 'Non spécifié' },
+      { label: 'Score', value: `${result.score || 0}/${result.total_questions || 0}` },
+      { label: 'Pourcentage', value: `${result.percentage || 0}%` },
+      { label: 'Date', value: formattedDate }
+    ];
+
+    userInfo.forEach(info => {
+      // Le mot-clé ("Nom:", "Email:", etc.) en rouge foncé
+      doc.setTextColor(118, 2, 10); 
+      doc.text(`${info.label}:`, 20, yPosition);
+
+      // La valeur (nom, email, score...) en noir
+      doc.setTextColor(0, 0, 0); 
+      doc.text(`${info.value}`, 50, yPosition);
+
+      yPosition += 10;
+    });
+
+    // Section des mauvaises réponses
+    if (result.incorrect_answers && result.incorrect_answers.length > 0) {
+      yPosition += 10;
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(118, 2, 10); // Couleur rouge foncé pour le titre
+      doc.text('Questions mal répondues:', 20, yPosition);
+    }
         
         const tableData = result.incorrect_answers.map(item => [
           item.question || 'Question non disponible',
