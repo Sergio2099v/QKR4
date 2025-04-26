@@ -94,17 +94,17 @@ export default function History() {
       const formattedDate = formatDate(result.created_at);
 
       // Configuration des polices
-      doc.setFont('helvetica'); // Police par défaut
+      doc.setFont('undefined'); // Police par défaut
       
       // 1. En-tête du document
       doc.setFontSize(20);
-      doc.setFont(helvetica , 'bold');
+      doc.setFont(undefined , 'bold');
       doc.setTextColor(33, 33, 33); // Noir
       doc.text('RESULTATS DU QUIZ', 20, 20);
 
       // 2. Informations utilisateur
       doc.setFontSize(12);
-      doc.setFont(helvetica , 'normal');
+      doc.setFont(undefined , 'normal');
       let yPosition = 40;
       
       const userInfo = [
@@ -123,7 +123,7 @@ export default function History() {
       // 3. Questions incorrectes
       if (result.incorrect_answers && result.incorrect_answers.length > 0) {
         doc.setFontSize(16);
-        doc.setFont(helvetica , 'bold');
+        doc.setFont(undefined , 'bold');
         doc.text('Questions mal répondues:', 20, yPosition + 10);
         
         // Préparation des données du tableau
@@ -136,14 +136,14 @@ export default function History() {
           ]);
 
         // Police monospace pour le tableau
-        doc.setFont('helvetica ');
+        doc.setFont('undefined ');
         
         autoTable(doc, {
           head: [['Question', 'Votre réponse', 'Bonne réponse']],
           body: tableData,
           startY: yPosition + 20,
           styles: { 
-            font: 'helvetica ',
+            font: 'undefined ',
             fontSize: 10,
             cellPadding: 3,
             overflow: 'linebreak',
@@ -163,7 +163,7 @@ export default function History() {
 
       // 4. Pied de page
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'italic');
+      doc.setFont('undefined', 'italic');
       doc.setTextColor(100, 100, 100);
       const pageHeight = doc.internal.pageSize.getHeight();
       doc.text('Quiz karoka - ' + new Date().toLocaleDateString(), 20, pageHeight - 10);
